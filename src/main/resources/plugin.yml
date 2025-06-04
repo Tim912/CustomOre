@@ -9,3 +9,9 @@ commands:
   slayer:
     description: Open the slayer menu
     usage: /<command>
+  armor:
+    description: Open the custom armor menu
+    usage: /<command>
+  ah:
+    description: Open the auction house
+    usage: /<command>

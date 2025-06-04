@@ -7,16 +7,25 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import com.example.customitemsystem.slayer.SlayerManager;
+import com.example.customitemsystem.ArmorMenu;
+import com.example.customitemsystem.AuctionHouse;
+import com.example.customitemsystem.ManaManager;
 
 public class CustomItemPlugin extends JavaPlugin {
 
     private AbilityManager abilityManager;
     private SlayerManager slayerManager;
+    private ManaManager manaManager;
+    private ArmorMenu armorMenu;
+    private AuctionHouse auctionHouse;
 
     @Override
     public void onEnable() {
-        abilityManager = new AbilityManager(this);
+        manaManager = new ManaManager(this);
+        abilityManager = new AbilityManager(this, manaManager);
         slayerManager = new SlayerManager(this);
+        armorMenu = new ArmorMenu(this, abilityManager);
+        auctionHouse = new AuctionHouse(this);
     }
 
     @Override
@@ -45,6 +54,14 @@ public class CustomItemPlugin extends JavaPlugin {
                 return true;
             }
             slayerManager.openMainMenu(player);
+            return true;
+        } else if (command.getName().equalsIgnoreCase("armor")) {
+            if (!(sender instanceof Player player)) return true;
+            armorMenu.open(player);
+            return true;
+        } else if (command.getName().equalsIgnoreCase("ah")) {
+            if (!(sender instanceof Player player)) return true;
+            auctionHouse.open(player);
             return true;
         }
         return false;
