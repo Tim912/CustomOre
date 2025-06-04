@@ -21,3 +21,5 @@ commands:
   givemorph:
     description: Give the Morph set items
     usage: /<command>
+  skills:
+    description: View your skill points

@@ -7,7 +7,7 @@
 * `/armor` now opens a wardrobe that stores up to 18 armor sets per player. Shift-click a slot to save your current gear and click to equip with a short cooldown.
 
 * `/ah` and `/ahsell <price>` implement a simple buy-it-now auction house with a 5 % listing fee and duplicate item protection. Listings are saved to `plugins/CustomItemSystem/save/auctionhouse.yml` so they persist after restarts.
-* Morph armor pieces now display their full set bonuses in the lore and show how many pieces you currently have equipped along with the next bonus threshold.
-
-* `/ah` and `/ahsell <price>` implement a simple buy-it-now auction house with a 5 % listing fee and duplicate item protection.
+* Morph armor pieces now highlight only the active set bonuses and hint at the next unlock.
+* New player stats system tracks strength, dexterity, defense, max mana, mana regeneration, ability damage and agility.
+* `/skills` shows your current stat points. Wearing the full Morph set grants +5 points in every stat.
 

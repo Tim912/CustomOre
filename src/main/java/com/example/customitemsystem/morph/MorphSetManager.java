@@ -17,15 +17,19 @@ import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.plugin.java.JavaPlugin;
+import com.example.customitemsystem.stats.StatsManager;
+import com.example.customitemsystem.stats.PlayerStats;
 
 /**
  * Applies bonuses for players wearing Morph set items.
  */
 public class MorphSetManager implements Listener {
     private final JavaPlugin plugin;
+    private final StatsManager statsManager;
 
-    public MorphSetManager(JavaPlugin plugin) {
+    public MorphSetManager(JavaPlugin plugin, StatsManager statsManager) {
         this.plugin = plugin;
+        this.statsManager = statsManager;
         Bukkit.getPluginManager().registerEvents(this, plugin);
         Bukkit.getScheduler().runTaskTimer(plugin, this::tick, 0L, 100L);
     }
@@ -33,6 +37,7 @@ public class MorphSetManager implements Listener {
     private void tick() {
         for (Player player : Bukkit.getOnlinePlayers()) {
             int pieces = countPieces(player);
+            statsManager.setMorphBonus(player, pieces == MorphItem.values().length);
             if (pieces == MorphItem.values().length) {
                 applyFullSet(player);
             }
@@ -64,12 +69,26 @@ public class MorphSetManager implements Listener {
         lore.add(ChatColor.GRAY + "Requires Level " + morph.getLevelReq());
         lore.add("");
         lore.add(ChatColor.LIGHT_PURPLE + "Morph Set Bonuses:");
-        lore.add(ChatColor.AQUA + "+5 All Skills");
-        lore.add(ChatColor.AQUA + "+8 Mana Regeneration /5s");
-        lore.add(ChatColor.AQUA + "+20% Walk Speed");
-        lore.add(ChatColor.AQUA + "+260 Health Regeneration");
-        lore.add(ChatColor.AQUA + "+182 Spell Damage");
-        lore.add(ChatColor.AQUA + "+176 Melee Damage");
+
+        String[] bonus = {
+            "+5 All Skills",
+            "+8 Mana Regeneration /5s",
+            "+20% Walk Speed",
+            "+260 Health Regeneration",
+            "+182 Spell Damage",
+            "+176 Melee Damage"
+        };
+        int[] thresh = {2,4,6,8,8,8};
+        boolean addedNext = false;
+        for (int i = 0; i < bonus.length; i++) {
+            if (pieces >= thresh[i]) {
+                lore.add(ChatColor.AQUA + bonus[i]);
+            } else if (!addedNext) {
+                lore.add(ChatColor.DARK_GRAY + bonus[i]);
+                addedNext = true;
+            }
+        }
+
         lore.add("");
         lore.add(ChatColor.GREEN + "Pieces: " + pieces + "/" + MorphItem.values().length);
         int next = nextThreshold(pieces);
