@@ -10,11 +10,17 @@ commands:
     description: Open the slayer menu
     usage: /<command>
   armor:
-    description: Open the custom armor menu
+    description: Open the wardrobe
     usage: /<command>
   ah:
     description: Open the auction house
     usage: /<command>
   ahsell:
-    description: List the held item in the auction house
+    description: List the held item for sale
+    usage: /<command> <price>
+  givemorph:
+    description: Give the Morph set items
+    usage: /<command>
+  skills:
+    description: View your skill points
     usage: /<command>
