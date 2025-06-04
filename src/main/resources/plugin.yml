@@ -1,0 +1,8 @@
+name: CustomItemSystem
+main: com.example.customitemsystem.CustomItemPlugin
+version: 1.0
+api-version: 1.21.4
+commands:
+  addability:
+    description: Add an ability to the item in your hand.
+    usage: /<command> <ability>

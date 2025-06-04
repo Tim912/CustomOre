@@ -1,0 +1,41 @@
+package com.example.customitemsystem;
+
+import org.bukkit.command.Command;
+import org.bukkit.command.CommandSender;
+import org.bukkit.entity.Player;
+import org.bukkit.inventory.ItemStack;
+import org.bukkit.plugin.java.JavaPlugin;
+
+public class CustomItemPlugin extends JavaPlugin {
+
+    private AbilityManager abilityManager;
+
+    @Override
+    public void onEnable() {
+        abilityManager = new AbilityManager(this);
+    }
+
+    @Override
+    public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
+        if (command.getName().equalsIgnoreCase("addability")) {
+            if (!(sender instanceof Player player)) {
+                sender.sendMessage("Only players can use this command.");
+                return true;
+            }
+            if (args.length != 1) {
+                sender.sendMessage("Usage: /" + label + " <ability>");
+                return true;
+            }
+            Ability ability = Ability.fromString(args[0]);
+            if (ability == null) {
+                sender.sendMessage("Unknown ability.");
+                return true;
+            }
+            ItemStack item = player.getInventory().getItemInMainHand();
+            abilityManager.addAbility(item, ability);
+            sender.sendMessage(ability.getDisplayName() + " " + ability.getDescription());
+            return true;
+        }
+        return false;
+    }
+}
