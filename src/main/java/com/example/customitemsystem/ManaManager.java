@@ -1,0 +1,61 @@
+package com.example.customitemsystem;
+
+import org.bukkit.Bukkit;
+import org.bukkit.ChatColor;
+import org.bukkit.entity.Player;
+import org.bukkit.event.EventHandler;
+import org.bukkit.event.Listener;
+import org.bukkit.event.player.PlayerJoinEvent;
+import org.bukkit.event.player.PlayerQuitEvent;
+import org.bukkit.plugin.java.JavaPlugin;
+
+import java.util.HashMap;
+import java.util.Map;
+import java.util.UUID;
+
+/**
+ * Simple mana system that regenerates over time and is displayed
+ * in the player's action bar.
+ */
+public class ManaManager implements Listener {
+    private final Map<UUID, Integer> mana = new HashMap<>();
+    private final JavaPlugin plugin;
+    private final int maxMana = 100;
+
+    public ManaManager(JavaPlugin plugin) {
+        this.plugin = plugin;
+        Bukkit.getPluginManager().registerEvents(this, plugin);
+        Bukkit.getScheduler().runTaskTimer(plugin, this::tick, 0L, 20L);
+    }
+
+    private void tick() {
+        for (UUID id : mana.keySet()) {
+            Player p = Bukkit.getPlayer(id);
+            if (p == null) continue;
+            int value = Math.min(maxMana, mana.get(id) + 1);
+            mana.put(id, value);
+            p.sendActionBar(ChatColor.AQUA + "Mana: " + value + "/" + maxMana);
+        }
+    }
+
+    @EventHandler
+    public void onJoin(PlayerJoinEvent event) {
+        mana.put(event.getPlayer().getUniqueId(), maxMana);
+    }
+
+    @EventHandler
+    public void onQuit(PlayerQuitEvent event) {
+        mana.remove(event.getPlayer().getUniqueId());
+    }
+
+    public boolean useMana(Player player, int amount) {
+        UUID id = player.getUniqueId();
+        int current = mana.getOrDefault(id, maxMana);
+        if (current < amount) {
+            player.sendMessage(ChatColor.RED + "Not enough mana!");
+            return false;
+        }
+        mana.put(id, current - amount);
+        return true;
+    }
+}
