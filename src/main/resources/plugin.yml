@@ -6,3 +6,6 @@ commands:
   addability:
     description: Add an ability to the item in your hand.
     usage: /<command> <ability>
+  slayer:
+    description: Open the slayer menu
+    usage: /<command>
