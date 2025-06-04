@@ -4,10 +4,11 @@ A simple Spigot plugin for Minecraft 1.21.4 that adds a custom item ability syst
 
 ## Features
 
-* Over twenty abilities with descriptions – including custom powers like **Hyperion Beam** and **Terminator Volley**.
+* Over twenty abilities with descriptions – including new powers like **Frozen Scythe** and **Lightbinder**.
 * Each ability has a mana cost. Players regenerate mana over time and the current amount is shown in the action bar.
 * Items display each ability and its description in the lore.
 * Improved slayer bosses with a boss bar showing kill progress and boss health.
-* Simple `/armor` and `/ah` menus demonstrate custom armor and an auction house.
+* `/armor` opens a paged menu with ten themed armor sets from Hypixel and Wynncraft.
+* `/ah` and `/ahsell` provide a basic but safer auction house where items can be listed and purchased.
 
 This project is a basic example and may require Spigot 1.20.1 API to compile.

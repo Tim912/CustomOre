@@ -131,6 +131,23 @@ public class AbilityManager implements Listener {
                 }
                 player.getWorld().spawnParticle(org.bukkit.Particle.SWEEP_ATTACK, loc, 10, 0.5, 0.5, 0.5);
             }
+            case FROZEN_SCYTHE -> {
+                org.bukkit.entity.Snowball snow = player.launchProjectile(org.bukkit.entity.Snowball.class);
+                snow.setVelocity(player.getLocation().getDirection().multiply(1.5));
+            }
+            case LIGHTBINDER -> {
+                player.setAbsorptionAmount(player.getAbsorptionAmount() + 6);
+            }
+            case SHADOW_RUSH -> {
+                org.bukkit.Location loc = player.getLocation().add(player.getLocation().getDirection().multiply(6));
+                if (!loc.getBlock().getType().isSolid() && !loc.clone().add(0,1,0).getBlock().getType().isSolid()) {
+                    player.teleport(loc);
+                }
+                player.spawnParticle(org.bukkit.Particle.SMOKE_LARGE, player.getLocation(), 10, 0.5,0.5,0.5,0);
+            }
+            case AETHER_SHIELD -> {
+                player.addPotionEffect(new org.bukkit.potion.PotionEffect(org.bukkit.potion.PotionEffectType.DAMAGE_RESISTANCE, 200, 2));
+            }
         }
     }
 }

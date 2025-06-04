@@ -25,28 +25,38 @@ public class ArmorMenu implements Listener {
         Bukkit.getPluginManager().registerEvents(this, plugin);
     }
 
-    public void open(Player player) {
-        Inventory inv = Bukkit.createInventory(player, 27, ChatColor.BLUE + "Armor Sets");
-        int slot = 0;
-        for (Ability ability : Ability.values()) {
-            if (slot >= 25) break;
+    public void open(Player player, int page) {
+        Inventory inv = Bukkit.createInventory(player, 54, ChatColor.BLUE + "Armor Sets");
+        ArmorSet[] sets = ArmorSet.values();
+        int start = page * 5;
+        int end = Math.min(start + 5, sets.length);
+        for (int i = start; i < end; i++) {
+            ArmorSet set = sets[i];
             ItemStack item = new ItemStack(Material.DIAMOND_CHESTPLATE);
             ItemMeta meta = item.getItemMeta();
             if (meta != null) {
-                meta.setDisplayName(ChatColor.AQUA + ability.getDisplayName());
+                meta.setDisplayName(set.getDisplayName());
                 item.setItemMeta(meta);
             }
-            abilityManager.addAbility(item, ability);
-            inv.setItem(slot++, item);
+            abilityManager.addAbility(item, set.getAbility());
+            inv.setItem(i - start, item);
+        }
+        ItemStack prev = new ItemStack(Material.ARROW);
+        ItemMeta m = prev.getItemMeta();
+        if (m != null) {
+            m.setDisplayName(ChatColor.YELLOW + "Previous Page");
+            prev.setItemMeta(m);
         }
         ItemStack next = new ItemStack(Material.ARROW);
-        ItemMeta meta = next.getItemMeta();
-        if (meta != null) {
-            meta.setDisplayName(ChatColor.YELLOW + "Next Page");
-            next.setItemMeta(meta);
+        m = next.getItemMeta();
+        if (m != null) {
+            m.setDisplayName(ChatColor.YELLOW + "Next Page");
+            next.setItemMeta(m);
         }
-        inv.setItem(26, next);
+        inv.setItem(45, prev);
+        inv.setItem(53, next);
         player.openInventory(inv);
+        player.getPersistentDataContainer().set(new org.bukkit.NamespacedKey(plugin, "page"), org.bukkit.persistence.PersistentDataType.INTEGER, page);
     }
 
     @EventHandler
@@ -55,8 +65,16 @@ public class ArmorMenu implements Listener {
             e.setCancelled(true);
             ItemStack item = e.getCurrentItem();
             if (item == null) return;
-            if (item.getType() == Material.ARROW) return;
             Player p = (Player) e.getWhoClicked();
+            int page = p.getPersistentDataContainer().getOrDefault(new org.bukkit.NamespacedKey(plugin, "page"), org.bukkit.persistence.PersistentDataType.INTEGER, 0);
+            if (item.getType() == Material.ARROW) {
+                if (e.getSlot() == 45 && page > 0) {
+                    open(p, page - 1);
+                } else if (e.getSlot() == 53 && (page + 1) * 5 < ArmorSet.values().length) {
+                    open(p, page + 1);
+                }
+                return;
+            }
             p.getInventory().addItem(item);
         }
     }

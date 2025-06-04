@@ -15,3 +15,6 @@ commands:
   ah:
     description: Open the auction house
     usage: /<command>
+  ahsell:
+    description: List the held item in the auction house
+    usage: /<command>

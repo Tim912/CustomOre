@@ -57,11 +57,16 @@ public class CustomItemPlugin extends JavaPlugin {
             return true;
         } else if (command.getName().equalsIgnoreCase("armor")) {
             if (!(sender instanceof Player player)) return true;
-            armorMenu.open(player);
+            armorMenu.open(player, 0);
             return true;
         } else if (command.getName().equalsIgnoreCase("ah")) {
             if (!(sender instanceof Player player)) return true;
-            auctionHouse.open(player);
+            auctionHouse.open(player, 0);
+            return true;
+        } else if (command.getName().equalsIgnoreCase("ahsell")) {
+            if (!(sender instanceof Player player)) return true;
+            ItemStack item = player.getInventory().getItemInMainHand();
+            auctionHouse.listItem(player, item);
             return true;
         }
         return false;
