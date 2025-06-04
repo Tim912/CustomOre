@@ -3,6 +3,9 @@ package com.example.customitemsystem.slayer;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
+import org.bukkit.boss.BarColor;
+import org.bukkit.boss.BarStyle;
+import org.bukkit.boss.BossBar;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
@@ -84,6 +87,9 @@ public class SlayerManager implements Listener {
             ItemMeta meta = item.getItemMeta();
             if (meta != null) {
                 meta.setDisplayName(ChatColor.YELLOW + "Tier " + i);
+                java.util.List<String> lore = new java.util.ArrayList<>();
+                lore.add(ChatColor.GRAY + "Kill " + (i * 10) + " " + type.getKillType().name());
+                meta.setLore(lore);
                 item.setItemMeta(meta);
             }
             inv.setItem(i - 1, item);
@@ -93,7 +99,10 @@ public class SlayerManager implements Listener {
 
     private void startQuest(Player player, BossType type, int tier) {
         int killsNeeded = tier * 10;
-        quests.put(player.getUniqueId(), new SlayerQuest(player, type, tier, killsNeeded));
+        BossBar bar = Bukkit.createBossBar(ChatColor.DARK_RED + "Kills", BarColor.RED, BarStyle.SEGMENTED_10);
+        bar.addPlayer(player);
+        bar.setProgress(0);
+        quests.put(player.getUniqueId(), new SlayerQuest(player, type, tier, killsNeeded, type.getKillType(), bar));
     }
 
     @EventHandler
@@ -102,10 +111,13 @@ public class SlayerManager implements Listener {
         if (killer == null) return;
         SlayerQuest quest = quests.get(killer.getUniqueId());
         if (quest == null) return;
-        if (event.getEntity().getType() == org.bukkit.entity.EntityType.ZOMBIE) {
+        if (event.getEntity().getType() == quest.getKillType()) {
             quest.addKill();
+            double progress = (double) quest.getKills() / quest.getKillsNeeded();
+            quest.getBar().setProgress(Math.min(1.0, progress));
             killer.sendMessage(ChatColor.GRAY + "Kills: " + quest.getKills() + "/" + quest.getKillsNeeded());
             if (quest.isComplete()) {
+                quest.getBar().removeAll();
                 spawnBoss(quest);
                 quests.remove(killer.getUniqueId());
             }
@@ -119,15 +131,20 @@ public class SlayerManager implements Listener {
         entity.setCustomNameVisible(true);
         entity.setMaxHealth(20 + quest.getTier() * 10);
         entity.setHealth(entity.getMaxHealth());
+        final BossBar bar = Bukkit.createBossBar(entity.getCustomName(), BarColor.PURPLE, BarStyle.SEGMENTED_10);
+        bar.addPlayer(player);
+        bar.setProgress(1.0);
 
         new BukkitRunnable() {
             int ticks = 0;
             @Override
             public void run() {
                 if (entity.isDead()) {
+                    bar.removeAll();
                     cancel();
                     return;
                 }
+                bar.setProgress(entity.getHealth() / entity.getMaxHealth());
                 ticks += 20;
                 switch (quest.getBossType()) {
                     case ZOMBIE_LORD -> {

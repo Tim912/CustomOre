@@ -13,6 +13,8 @@ import org.bukkit.persistence.PersistentDataContainer;
 import org.bukkit.persistence.PersistentDataType;
 import org.bukkit.plugin.java.JavaPlugin;
 
+import com.example.customitemsystem.ManaManager;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -20,9 +22,11 @@ public class AbilityManager implements Listener {
 
     private final NamespacedKey key;
     private final JavaPlugin plugin;
+    private final ManaManager manaManager;
 
-    public AbilityManager(JavaPlugin plugin) {
+    public AbilityManager(JavaPlugin plugin, ManaManager manaManager) {
         this.plugin = plugin;
+        this.manaManager = manaManager;
         this.key = new NamespacedKey(plugin, "abilities");
         Bukkit.getPluginManager().registerEvents(this, plugin);
     }
@@ -69,7 +73,9 @@ public class AbilityManager implements Listener {
         for (String ab : abilities) {
             Ability ability = Ability.fromString(ab);
             if (ability != null) {
-                applyAbility(player, ability);
+                if (manaManager.useMana(player, ability.getCost())) {
+                    applyAbility(player, ability);
+                }
             }
         }
     }
@@ -83,7 +89,12 @@ public class AbilityManager implements Listener {
             case STRENGTH -> player.addPotionEffect(new org.bukkit.potion.PotionEffect(org.bukkit.potion.PotionEffectType.INCREASE_DAMAGE, 200, 1));
             case JUMP -> player.addPotionEffect(new org.bukkit.potion.PotionEffect(org.bukkit.potion.PotionEffectType.JUMP, 200, 2));
             case LIGHTNING -> player.getWorld().strikeLightning(player.getTargetBlockExact(50).getLocation());
-            case TELEPORT -> player.teleport(player.getLocation().add(player.getLocation().getDirection().multiply(5)));
+            case TELEPORT -> {
+                org.bukkit.Location target = player.getLocation().add(player.getLocation().getDirection().multiply(5));
+                if (!target.getBlock().getType().isSolid() && !target.clone().add(0,1,0).getBlock().getType().isSolid()) {
+                    player.teleport(target);
+                }
+            }
             case EXPLOSION -> player.getWorld().createExplosion(player.getLocation(), 2F, false, false);
             case FLIGHT -> player.setAllowFlight(true);
             case WATER_BREATHING -> player.addPotionEffect(new org.bukkit.potion.PotionEffect(org.bukkit.potion.PotionEffectType.WATER_BREATHING, 600, 0));
@@ -105,15 +116,37 @@ public class AbilityManager implements Listener {
                 }
             }
             case TERMINATOR_VOLLEY -> {
-                for (int i = 0; i < 3; i++) {
-                    org.bukkit.entity.Arrow arrow = player.launchProjectile(org.bukkit.entity.Arrow.class);
-                    arrow.setVelocity(arrow.getVelocity().multiply(1.5));
+                org.bukkit.Location base = player.getEyeLocation();
+                org.bukkit.util.Vector side = base.getDirection().clone().crossProduct(new org.bukkit.util.Vector(0,1,0)).normalize();
+                for (int i = -1; i <= 1; i++) {
+                    org.bukkit.Location loc = base.clone().add(side.clone().multiply(i));
+                    org.bukkit.entity.Arrow arrow = player.getWorld().spawnArrow(loc, base.getDirection(), 2F, 0F);
+                    arrow.setShooter(player);
                 }
             }
             case VOID_SLASH -> {
                 org.bukkit.Location loc = player.getLocation().add(player.getLocation().getDirection().multiply(4));
-                player.teleport(loc);
+                if (!loc.getBlock().getType().isSolid() && !loc.clone().add(0,1,0).getBlock().getType().isSolid()) {
+                    player.teleport(loc);
+                }
                 player.getWorld().spawnParticle(org.bukkit.Particle.SWEEP_ATTACK, loc, 10, 0.5, 0.5, 0.5);
+            }
+            case FROZEN_SCYTHE -> {
+                org.bukkit.entity.Snowball snow = player.launchProjectile(org.bukkit.entity.Snowball.class);
+                snow.setVelocity(player.getLocation().getDirection().multiply(1.5));
+            }
+            case LIGHTBINDER -> {
+                player.setAbsorptionAmount(player.getAbsorptionAmount() + 6);
+            }
+            case SHADOW_RUSH -> {
+                org.bukkit.Location loc = player.getLocation().add(player.getLocation().getDirection().multiply(6));
+                if (!loc.getBlock().getType().isSolid() && !loc.clone().add(0,1,0).getBlock().getType().isSolid()) {
+                    player.teleport(loc);
+                }
+                player.spawnParticle(org.bukkit.Particle.SMOKE_LARGE, player.getLocation(), 10, 0.5,0.5,0.5,0);
+            }
+            case AETHER_SHIELD -> {
+                player.addPotionEffect(new org.bukkit.potion.PotionEffect(org.bukkit.potion.PotionEffectType.DAMAGE_RESISTANCE, 200, 2));
             }
         }
     }
