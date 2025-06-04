@@ -5,9 +5,10 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.plugin.java.JavaPlugin;
+import org.bukkit.ChatColor;
 
 import com.example.customitemsystem.slayer.SlayerManager;
-import com.example.customitemsystem.ArmorMenu;
+import com.example.customitemsystem.wardrobe.WardrobeManager;
 import com.example.customitemsystem.AuctionHouse;
 import com.example.customitemsystem.ManaManager;
 
@@ -16,16 +17,18 @@ public class CustomItemPlugin extends JavaPlugin {
     private AbilityManager abilityManager;
     private SlayerManager slayerManager;
     private ManaManager manaManager;
-    private ArmorMenu armorMenu;
+    private WardrobeManager wardrobeManager;
     private AuctionHouse auctionHouse;
+    private com.example.customitemsystem.morph.MorphSetManager morphManager;
 
     @Override
     public void onEnable() {
         manaManager = new ManaManager(this);
         abilityManager = new AbilityManager(this, manaManager);
         slayerManager = new SlayerManager(this);
-        armorMenu = new ArmorMenu(this, abilityManager);
+        wardrobeManager = new WardrobeManager(this);
         auctionHouse = new AuctionHouse(this);
+        morphManager = new com.example.customitemsystem.morph.MorphSetManager(this);
     }
 
     @Override
@@ -57,7 +60,7 @@ public class CustomItemPlugin extends JavaPlugin {
             return true;
         } else if (command.getName().equalsIgnoreCase("armor")) {
             if (!(sender instanceof Player player)) return true;
-            armorMenu.open(player, 0);
+            wardrobeManager.open(player);
             return true;
         } else if (command.getName().equalsIgnoreCase("ah")) {
             if (!(sender instanceof Player player)) return true;
@@ -65,8 +68,30 @@ public class CustomItemPlugin extends JavaPlugin {
             return true;
         } else if (command.getName().equalsIgnoreCase("ahsell")) {
             if (!(sender instanceof Player player)) return true;
+            if (args.length != 1) {
+                player.sendMessage("Usage: /ahsell <price>");
+                return true;
+            }
+            double price;
+            try { price = Double.parseDouble(args[0]); } catch (NumberFormatException ex) { player.sendMessage("Invalid price"); return true; }
             ItemStack item = player.getInventory().getItemInMainHand();
-            auctionHouse.listItem(player, item);
+            auctionHouse.listItem(player, item, price);
+            return true;
+        } else if (command.getName().equalsIgnoreCase("givemorph")) {
+            if (!(sender instanceof Player player)) return true;
+            for (com.example.customitemsystem.morph.MorphItem item : com.example.customitemsystem.morph.MorphItem.values()) {
+                ItemStack stack = new ItemStack(item.getMaterial());
+                org.bukkit.inventory.meta.ItemMeta meta = stack.getItemMeta();
+                if (meta != null) {
+                    meta.setDisplayName(item.getDisplayName());
+                    java.util.List<String> lore = new java.util.ArrayList<>();
+                    lore.add(ChatColor.GRAY + "Requires Level " + item.getLevelReq());
+                    meta.setLore(lore);
+                    stack.setItemMeta(meta);
+                }
+                player.getInventory().addItem(stack);
+            }
+            player.sendMessage(ChatColor.GREEN + "Given Morph set items.");
             return true;
         }
         return false;
