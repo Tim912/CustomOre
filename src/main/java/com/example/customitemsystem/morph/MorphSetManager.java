@@ -16,13 +16,32 @@ import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
-import org.bukkit.plugin.java.JavaPlugin;
+import com.example.customitemsystem.stats.StatsManager;
+import com.example.customitemsystem.stats.PlayerStats;
+    private final StatsManager statsManager;
+    public MorphSetManager(JavaPlugin plugin, StatsManager statsManager) {
+        this.statsManager = statsManager;
 
-/**
- * Applies bonuses for players wearing Morph set items.
- */
-public class MorphSetManager implements Listener {
-    private final JavaPlugin plugin;
+            statsManager.setMorphBonus(player, pieces == MorphItem.values().length);
+
+        String[] bonus = {
+            "+5 All Skills",
+            "+8 Mana Regeneration /5s",
+            "+20% Walk Speed",
+            "+260 Health Regeneration",
+            "+182 Spell Damage",
+            "+176 Melee Damage"
+        };
+        int[] thresh = {2,4,6,8,8,8};
+        boolean addedNext = false;
+        for (int i = 0; i < bonus.length; i++) {
+            if (pieces >= thresh[i]) {
+                lore.add(ChatColor.AQUA + bonus[i]);
+            } else if (!addedNext) {
+                lore.add(ChatColor.DARK_GRAY + bonus[i]);
+                addedNext = true;
+            }
+        }
 
     public MorphSetManager(JavaPlugin plugin) {
         this.plugin = plugin;

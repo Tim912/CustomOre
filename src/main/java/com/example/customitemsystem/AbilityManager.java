@@ -7,6 +7,7 @@ import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerInteractEvent;
+import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.persistence.PersistentDataContainer;
@@ -14,6 +15,8 @@ import org.bukkit.persistence.PersistentDataType;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import com.example.customitemsystem.ManaManager;
+import com.example.customitemsystem.stats.StatsManager;
+import com.example.customitemsystem.stats.PlayerStats;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -23,10 +26,12 @@ public class AbilityManager implements Listener {
     private final NamespacedKey key;
     private final JavaPlugin plugin;
     private final ManaManager manaManager;
+    private final StatsManager statsManager;
 
-    public AbilityManager(JavaPlugin plugin, ManaManager manaManager) {
+    public AbilityManager(JavaPlugin plugin, ManaManager manaManager, StatsManager statsManager) {
         this.plugin = plugin;
         this.manaManager = manaManager;
+        this.statsManager = statsManager;
         this.key = new NamespacedKey(plugin, "abilities");
         Bukkit.getPluginManager().registerEvents(this, plugin);
     }
@@ -134,6 +139,8 @@ public class AbilityManager implements Listener {
             case FROZEN_SCYTHE -> {
                 org.bukkit.entity.Snowball snow = player.launchProjectile(org.bukkit.entity.Snowball.class);
                 snow.setVelocity(player.getLocation().getDirection().multiply(1.5));
+                int ad = statsManager.getStats(player).abilityDamage;
+                snow.setMetadata("abilityDamage", new org.bukkit.metadata.FixedMetadataValue(plugin, ad));
             }
             case LIGHTBINDER -> {
                 player.setAbsorptionAmount(player.getAbsorptionAmount() + 6);
@@ -148,6 +155,14 @@ public class AbilityManager implements Listener {
             case AETHER_SHIELD -> {
                 player.addPotionEffect(new org.bukkit.potion.PotionEffect(org.bukkit.potion.PotionEffectType.DAMAGE_RESISTANCE, 200, 2));
             }
+        }
+    }
+
+    @EventHandler
+    public void onDamage(EntityDamageByEntityEvent event) {
+        if (event.getDamager() instanceof org.bukkit.entity.Projectile proj && proj.hasMetadata("abilityDamage")) {
+            int bonus = proj.getMetadata("abilityDamage").get(0).asInt();
+            event.setDamage(event.getDamage() + bonus);
         }
     }
 }

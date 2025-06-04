@@ -11,6 +11,7 @@ import com.example.customitemsystem.slayer.SlayerManager;
 import com.example.customitemsystem.wardrobe.WardrobeManager;
 import com.example.customitemsystem.AuctionHouse;
 import com.example.customitemsystem.ManaManager;
+import com.example.customitemsystem.stats.StatsManager;
 
 public class CustomItemPlugin extends JavaPlugin {
 
@@ -20,15 +21,17 @@ public class CustomItemPlugin extends JavaPlugin {
     private WardrobeManager wardrobeManager;
     private AuctionHouse auctionHouse;
     private com.example.customitemsystem.morph.MorphSetManager morphManager;
+    private StatsManager statsManager;
 
     @Override
     public void onEnable() {
-        manaManager = new ManaManager(this);
-        abilityManager = new AbilityManager(this, manaManager);
+        statsManager = new StatsManager();
+        manaManager = new ManaManager(this, statsManager);
+        abilityManager = new AbilityManager(this, manaManager, statsManager);
         slayerManager = new SlayerManager(this);
         wardrobeManager = new WardrobeManager(this);
         auctionHouse = new AuctionHouse(this);
-        morphManager = new com.example.customitemsystem.morph.MorphSetManager(this);
+        morphManager = new com.example.customitemsystem.morph.MorphSetManager(this, statsManager);
     }
 
     @Override
@@ -111,6 +114,10 @@ public class CustomItemPlugin extends JavaPlugin {
             }
             morphManager.refreshPlayer(player);
             player.sendMessage(ChatColor.GREEN + "Given Morph set items.");
+            return true;
+        } else if (command.getName().equalsIgnoreCase("skills")) {
+            if (!(sender instanceof Player player)) return true;
+            statsManager.showStats(player);
             return true;
         }
         return false;
