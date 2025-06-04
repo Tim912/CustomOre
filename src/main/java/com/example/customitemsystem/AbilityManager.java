@@ -39,6 +39,7 @@ public class AbilityManager implements Listener {
             List<String> lore = meta.getLore();
             if (lore == null) lore = new ArrayList<>();
             lore.add(ability.getDisplayName());
+            lore.add(ability.getDescription());
             meta.setLore(lore);
             item.setItemMeta(meta);
         }
@@ -95,6 +96,25 @@ public class AbilityManager implements Listener {
             case GLOWING -> player.addPotionEffect(new org.bukkit.potion.PotionEffect(org.bukkit.potion.PotionEffectType.GLOWING, 200, 0));
             case POISON_CLOUD -> player.getWorld().spawnParticle(org.bukkit.Particle.SPELL_MOB, player.getLocation(), 20, 0.5, 0.5, 0.5, 1);
             case SLOWNESS_AREA -> player.addPotionEffect(new org.bukkit.potion.PotionEffect(org.bukkit.potion.PotionEffectType.SLOW, 200, 1));
+            case HYPERION_BEAM -> {
+                org.bukkit.Location loc = player.getEyeLocation();
+                for (int i = 0; i < 5; i++) {
+                    loc = loc.add(loc.getDirection());
+                    player.getWorld().spawnParticle(org.bukkit.Particle.END_ROD, loc, 10, 0.1, 0.1, 0.1, 0);
+                    player.getWorld().createExplosion(loc, 1F, false, false);
+                }
+            }
+            case TERMINATOR_VOLLEY -> {
+                for (int i = 0; i < 3; i++) {
+                    org.bukkit.entity.Arrow arrow = player.launchProjectile(org.bukkit.entity.Arrow.class);
+                    arrow.setVelocity(arrow.getVelocity().multiply(1.5));
+                }
+            }
+            case VOID_SLASH -> {
+                org.bukkit.Location loc = player.getLocation().add(player.getLocation().getDirection().multiply(4));
+                player.teleport(loc);
+                player.getWorld().spawnParticle(org.bukkit.Particle.SWEEP_ATTACK, loc, 10, 0.5, 0.5, 0.5);
+            }
         }
     }
 }
