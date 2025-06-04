@@ -37,4 +37,16 @@ public enum MorphItem {
     public int getLevelReq() {
         return levelReq;
     }
+
+    /**
+     * Returns the Morph item for the given material or null if none matches.
+     */
+    public static MorphItem fromMaterial(Material material) {
+        for (MorphItem item : values()) {
+            if (item.material == material) {
+                return item;
+            }
+        }
+        return null;
+    }
 }

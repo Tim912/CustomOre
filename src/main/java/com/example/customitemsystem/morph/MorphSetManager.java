@@ -2,6 +2,8 @@ package com.example.customitemsystem.morph;
 
 import java.util.EnumSet;
 import java.util.Set;
+import java.util.ArrayList;
+import java.util.List;
 
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
@@ -14,6 +16,7 @@ import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.plugin.java.JavaPlugin;
+import org.bukkit.inventory.meta.ItemMeta;
 
 /**
  * Applies bonuses for players wearing Morph set items.
@@ -33,7 +36,58 @@ public class MorphSetManager implements Listener {
             if (pieces == MorphItem.values().length) {
                 applyFullSet(player);
             }
+            updateLore(player, pieces);
         }
+    }
+
+    private void updateLore(Player player, int pieces) {
+        for (ItemStack item : player.getInventory().getArmorContents()) {
+            refreshItemLore(item, pieces);
+        }
+        for (ItemStack item : player.getInventory().getContents()) {
+            refreshItemLore(item, pieces);
+        }
+    }
+
+    /** Updates Morph item lore for the given player immediately. */
+    public void refreshPlayer(Player player) {
+        updateLore(player, countPieces(player));
+    }
+
+    private void refreshItemLore(ItemStack item, int pieces) {
+        if (item == null) return;
+        MorphItem morph = MorphItem.fromMaterial(item.getType());
+        if (morph == null) return;
+        ItemMeta meta = item.getItemMeta();
+        if (meta == null) return;
+        List<String> lore = new ArrayList<>();
+        lore.add(ChatColor.GRAY + "Requires Level " + morph.getLevelReq());
+        lore.add("");
+        lore.add(ChatColor.LIGHT_PURPLE + "Morph Set Bonuses:");
+        lore.add(ChatColor.AQUA + "+5 All Skills");
+        lore.add(ChatColor.AQUA + "+8 Mana Regeneration /5s");
+        lore.add(ChatColor.AQUA + "+20% Walk Speed");
+        lore.add(ChatColor.AQUA + "+260 Health Regeneration");
+        lore.add(ChatColor.AQUA + "+182 Spell Damage");
+        lore.add(ChatColor.AQUA + "+176 Melee Damage");
+        lore.add("");
+        lore.add(ChatColor.GREEN + "Pieces: " + pieces + "/" + MorphItem.values().length);
+        int next = nextThreshold(pieces);
+        if (next > pieces) {
+            lore.add(ChatColor.GRAY + "Next bonus at " + next + " pieces");
+        } else {
+            lore.add(ChatColor.GRAY + "All bonuses unlocked");
+        }
+        meta.setLore(lore);
+        item.setItemMeta(meta);
+    }
+
+    private int nextThreshold(int pieces) {
+        int[] t = {2,4,6,8};
+        for (int x : t) {
+            if (pieces < x) return x;
+        }
+        return 8;
     }
 
     private int countPieces(Player player) {

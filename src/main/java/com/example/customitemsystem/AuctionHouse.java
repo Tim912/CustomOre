@@ -1,6 +1,10 @@
 package com.example.customitemsystem;
 
 import java.util.*;
+import java.io.File;
+import java.io.IOException;
+import org.bukkit.configuration.file.YamlConfiguration;
+import org.bukkit.configuration.ConfigurationSection;
 
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
@@ -25,11 +29,58 @@ public class AuctionHouse implements Listener {
     private final Map<Integer, Listing> listings = new HashMap<>();
     private int nextId = 1;
     private final NamespacedKey idKey;
+    private final File saveFile;
 
     public AuctionHouse(JavaPlugin plugin) {
         this.plugin = plugin;
         this.idKey = new NamespacedKey(plugin, "item_id");
         Bukkit.getPluginManager().registerEvents(this, plugin);
+        File dir = new File(plugin.getDataFolder(), "save");
+        if (!dir.exists()) dir.mkdirs();
+        this.saveFile = new File(dir, "auctionhouse.yml");
+        loadData();
+    }
+
+    /** Load listings from disk. */
+    private void loadData() {
+        if (!saveFile.exists()) return;
+        YamlConfiguration config = YamlConfiguration.loadConfiguration(saveFile);
+        nextId = config.getInt("nextId", 1);
+        ConfigurationSection sec = config.getConfigurationSection("listings");
+        if (sec != null) {
+            for (String key : sec.getKeys(false)) {
+                int id = Integer.parseInt(key);
+                ItemStack item = sec.getItemStack(key + ".item");
+                if (item == null) continue;
+                Listing l = new Listing();
+                l.id = id;
+                l.item = item;
+                l.itemId = sec.getString(key + ".itemId");
+                l.seller = UUID.fromString(sec.getString(key + ".seller"));
+                l.price = sec.getDouble(key + ".price");
+                l.endTime = sec.getLong(key + ".endTime");
+                listings.put(id, l);
+            }
+        }
+    }
+
+    /** Save listings to disk. */
+    public void saveData() {
+        YamlConfiguration config = new YamlConfiguration();
+        config.set("nextId", nextId);
+        for (Listing l : listings.values()) {
+            String key = "listings." + l.id;
+            config.set(key + ".item", l.item);
+            config.set(key + ".itemId", l.itemId);
+            config.set(key + ".seller", l.seller.toString());
+            config.set(key + ".price", l.price);
+            config.set(key + ".endTime", l.endTime);
+        }
+        try {
+            config.save(saveFile);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
     private void assignId(ItemStack item) {
@@ -54,6 +105,8 @@ public class AuctionHouse implements Listener {
             ItemMeta meta = display.getItemMeta();
             if (meta != null) {
                 List<String> lore = meta.getLore() == null ? new ArrayList<>() : new ArrayList<>(meta.getLore());
+                lore.add("");
+                lore.add("");
                 lore.add(ChatColor.YELLOW + "Price: " + l.price);
                 lore.add(ChatColor.GRAY + "Seller: " + Bukkit.getOfflinePlayer(l.seller).getName());
                 meta.setLore(lore);
@@ -104,7 +157,7 @@ public class AuctionHouse implements Listener {
 
     @EventHandler
     public void onClick(InventoryClickEvent e) {
-        if (!ChatColor.GOLD + "Auction House".equals(e.getView().getTitle())) return;
+        if (!(ChatColor.GOLD + "Auction House").equals(e.getView().getTitle())) return;
         e.setCancelled(true);
         Player player = (Player) e.getWhoClicked();
         ItemStack item = e.getCurrentItem();

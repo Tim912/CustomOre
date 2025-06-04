@@ -32,6 +32,13 @@ public class CustomItemPlugin extends JavaPlugin {
     }
 
     @Override
+    public void onDisable() {
+        if (auctionHouse != null) {
+            auctionHouse.saveData();
+        }
+    }
+
+    @Override
     public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
         if (command.getName().equalsIgnoreCase("addability")) {
             if (!(sender instanceof Player player)) {
@@ -86,11 +93,23 @@ public class CustomItemPlugin extends JavaPlugin {
                     meta.setDisplayName(item.getDisplayName());
                     java.util.List<String> lore = new java.util.ArrayList<>();
                     lore.add(ChatColor.GRAY + "Requires Level " + item.getLevelReq());
+                    lore.add("");
+                    lore.add(ChatColor.LIGHT_PURPLE + "Morph Set Bonuses:");
+                    lore.add(ChatColor.AQUA + "+5 All Skills");
+                    lore.add(ChatColor.AQUA + "+8 Mana Regeneration /5s");
+                    lore.add(ChatColor.AQUA + "+20% Walk Speed");
+                    lore.add(ChatColor.AQUA + "+260 Health Regeneration");
+                    lore.add(ChatColor.AQUA + "+182 Spell Damage");
+                    lore.add(ChatColor.AQUA + "+176 Melee Damage");
+                    lore.add("");
+                    lore.add(ChatColor.GREEN + "Pieces: 0/" + com.example.customitemsystem.morph.MorphItem.values().length);
+                    lore.add(ChatColor.GRAY + "Next bonus at 2 pieces");
                     meta.setLore(lore);
                     stack.setItemMeta(meta);
                 }
                 player.getInventory().addItem(stack);
             }
+            morphManager.refreshPlayer(player);
             player.sendMessage(ChatColor.GREEN + "Given Morph set items.");
             return true;
         }
