@@ -134,16 +134,25 @@ public class SlayerManager implements Listener {
                         if (ticks % 100 == 0) {
                             player.getWorld().spawnEntity(entity.getLocation(), EntityType.ZOMBIE);
                         }
+                        if (ticks % 120 == 0) {
+                            entity.setVelocity(player.getLocation().toVector().subtract(entity.getLocation().toVector()).normalize().multiply(0.5));
+                        }
                     }
                     case NECRO_MAGE -> {
                         if (ticks % 80 == 0) {
                             entity.launchProjectile(org.bukkit.entity.Fireball.class);
+                        }
+                        if (ticks % 160 == 0) {
+                            player.getWorld().strikeLightning(player.getLocation());
                         }
                     }
                     case WITHER_KING -> {
                         if (ticks % 120 == 0) {
                             entity.teleport(player.getLocation());
                             player.getWorld().createExplosion(entity.getLocation(), 2F, false, false);
+                        }
+                        if (ticks % 100 == 0) {
+                            player.getWorld().spawnEntity(entity.getLocation(), EntityType.WITHER_SKELETON);
                         }
                     }
                 }
