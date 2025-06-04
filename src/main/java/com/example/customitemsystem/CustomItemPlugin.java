@@ -33,7 +33,7 @@ public class CustomItemPlugin extends JavaPlugin {
             }
             ItemStack item = player.getInventory().getItemInMainHand();
             abilityManager.addAbility(item, ability);
-            sender.sendMessage("Added ability " + ability.name() + " to item.");
+            sender.sendMessage(ability.getDisplayName() + " " + ability.getDescription());
             return true;
         }
         return false;
