@@ -29,6 +29,7 @@ public class AuctionHouse implements Listener {
     private int nextId = 1;
     private final NamespacedKey idKey;
     private final File saveFile;
+    private final Map<UUID, Integer> viewing = new HashMap<>();
 
     public AuctionHouse(JavaPlugin plugin) {
         this.plugin = plugin;
@@ -105,7 +106,9 @@ public class AuctionHouse implements Listener {
             if (meta != null) {
                 List<String> lore = meta.getLore() == null ? new ArrayList<>() : new ArrayList<>(meta.getLore());
                 lore.add("");
+                long mins = Math.max(0, (l.endTime - System.currentTimeMillis()) / 60000);
                 lore.add(ChatColor.YELLOW + "Price: " + l.price);
+                lore.add(ChatColor.GRAY + "Time Left: " + mins + "m");
                 lore.add(ChatColor.GRAY + "Seller: " + Bukkit.getOfflinePlayer(l.seller).getName());
                 meta.setLore(lore);
                 display.setItemMeta(meta);
@@ -174,21 +177,71 @@ public class AuctionHouse implements Listener {
             if (l.item.isSimilar(item)) { target = l; break; }
         }
         if (target == null) return;
-        if (player.getUniqueId().equals(target.seller)) {
-            player.sendMessage(ChatColor.RED + "You cannot buy your own item.");
-            return;
+        openListing(player, target);
+    }
+
+    @EventHandler
+    public void onListingClick(InventoryClickEvent e) {
+        String title = e.getView().getTitle();
+        if (!title.startsWith(ChatColor.GOLD + "Listing #")) return;
+        e.setCancelled(true);
+        Player player = (Player) e.getWhoClicked();
+        Integer id = viewing.get(player.getUniqueId());
+        if (id == null) return;
+        Listing l = listings.get(id);
+        if (l == null) { player.closeInventory(); return; }
+        if (e.getSlot() == 7) {
+            if (player.getUniqueId().equals(l.seller)) {
+                int fee = (int) Math.ceil(l.price * 0.01);
+                if (player.getLevel() < fee) {
+                    player.sendMessage(ChatColor.RED + "Need " + fee + " levels to cancel.");
+                    return;
+                }
+                player.setLevel(player.getLevel() - fee);
+                player.getInventory().addItem(l.item);
+                listings.remove(l.id);
+                player.sendMessage(ChatColor.GREEN + "Listing cancelled.");
+            } else {
+                if (player.getLevel() < (int) l.price) {
+                    player.sendMessage(ChatColor.RED + "Not enough experience levels.");
+                    return;
+                }
+                player.setLevel(player.getLevel() - (int) l.price);
+                player.getInventory().addItem(l.item);
+                listings.remove(l.id);
+                Player seller = Bukkit.getPlayer(l.seller);
+                if (seller != null) seller.sendMessage(ChatColor.GREEN + player.getName() + " bought your item for " + l.price);
+                player.sendMessage(ChatColor.GREEN + "Purchased item for " + l.price);
+            }
+            player.closeInventory();
+            open(player, 0);
+        } else if (e.getSlot() == 8) {
+            player.closeInventory();
+            open(player, 0);
         }
-        if (player.getLevel() < (int) target.price) {
-            player.sendMessage(ChatColor.RED + "Not enough experience levels.");
-            return;
+    }
+
+    private void openListing(Player player, Listing l) {
+        Inventory inv = Bukkit.createInventory(player, 9, ChatColor.GOLD + "Listing #" + l.id);
+        ItemStack display = l.item.clone();
+        inv.setItem(4, display);
+        ItemStack action = new ItemStack(player.getUniqueId().equals(l.seller) ? Material.BARRIER : Material.EMERALD_BLOCK);
+        ItemMeta meta = action.getItemMeta();
+        if (meta != null) {
+            if (player.getUniqueId().equals(l.seller)) {
+                meta.setDisplayName(ChatColor.RED + "Cancel (1% fee)");
+            } else {
+                meta.setDisplayName(ChatColor.GREEN + "Buy for " + l.price);
+            }
+            action.setItemMeta(meta);
         }
-        player.setLevel(player.getLevel() - (int) target.price);
-        player.getInventory().addItem(target.item);
-        listings.remove(target.id);
-        player.sendMessage(ChatColor.GREEN + "Purchased item for " + target.price);
-        Player seller = Bukkit.getPlayer(target.seller);
-        if (seller != null) seller.sendMessage(ChatColor.GREEN + player.getName() + " bought your item for " + target.price);
-        open(player, page);
+        inv.setItem(7, action);
+        ItemStack close = new ItemStack(Material.ARROW);
+        meta = close.getItemMeta();
+        if (meta != null) { meta.setDisplayName(ChatColor.YELLOW + "Back"); close.setItemMeta(meta); }
+        inv.setItem(8, close);
+        viewing.put(player.getUniqueId(), l.id);
+        player.openInventory(inv);
     }
 
     private static class Listing {

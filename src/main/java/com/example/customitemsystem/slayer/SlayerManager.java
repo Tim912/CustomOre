@@ -129,8 +129,9 @@ public class SlayerManager implements Listener {
         LivingEntity entity = (LivingEntity) player.getWorld().spawnEntity(player.getLocation(), quest.getBossType().getEntityType());
         entity.setCustomName(quest.getBossType().getDisplayName() + ChatColor.WHITE + " Tier " + quest.getTier());
         entity.setCustomNameVisible(true);
-        entity.setMaxHealth(20 + quest.getTier() * 10);
-        entity.setHealth(entity.getMaxHealth());
+        double hp = 20 + quest.getTier() * 10;
+        entity.getAttribute(org.bukkit.attribute.Attribute.GENERIC_MAX_HEALTH).setBaseValue(hp);
+        entity.setHealth(hp);
         final BossBar bar = Bukkit.createBossBar(entity.getCustomName(), BarColor.PURPLE, BarStyle.SEGMENTED_10);
         bar.addPlayer(player);
         bar.setProgress(1.0);

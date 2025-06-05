@@ -28,6 +28,7 @@ public class CustomItemPlugin extends JavaPlugin {
         statsManager = new StatsManager();
         manaManager = new ManaManager(this, statsManager);
         abilityManager = new AbilityManager(this, manaManager, statsManager);
+        getCommand("addability").setTabCompleter(new AbilityTabCompleter());
         slayerManager = new SlayerManager(this);
         wardrobeManager = new WardrobeManager(this);
         auctionHouse = new AuctionHouse(this);
@@ -38,6 +39,9 @@ public class CustomItemPlugin extends JavaPlugin {
     public void onDisable() {
         if (auctionHouse != null) {
             auctionHouse.saveData();
+        }
+        if (wardrobeManager != null) {
+            wardrobeManager.saveAll();
         }
     }
 
@@ -83,7 +87,12 @@ public class CustomItemPlugin extends JavaPlugin {
                 return true;
             }
             double price;
-            try { price = Double.parseDouble(args[0]); } catch (NumberFormatException ex) { player.sendMessage("Invalid price"); return true; }
+            try { 
+                price = Double.parseDouble(args[0]); 
+            } catch (NumberFormatException ex) { 
+                player.sendMessage("Invalid price"); 
+                return true; 
+            }
             ItemStack item = player.getInventory().getItemInMainHand();
             auctionHouse.listItem(player, item, price);
             return true;
