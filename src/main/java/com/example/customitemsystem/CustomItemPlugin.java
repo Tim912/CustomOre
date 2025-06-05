@@ -22,10 +22,11 @@ public class CustomItemPlugin extends JavaPlugin {
     private AuctionHouse auctionHouse;
     private com.example.customitemsystem.morph.MorphSetManager morphManager;
     private StatsManager statsManager;
+    private CustomArmorCreator armorCreator;
 
     @Override
     public void onEnable() {
-        statsManager = new StatsManager();
+        statsManager = new StatsManager(this);
         manaManager = new ManaManager(this, statsManager);
         abilityManager = new AbilityManager(this, manaManager, statsManager);
         getCommand("addability").setTabCompleter(new AbilityTabCompleter());
@@ -33,6 +34,7 @@ public class CustomItemPlugin extends JavaPlugin {
         wardrobeManager = new WardrobeManager(this);
         auctionHouse = new AuctionHouse(this);
         morphManager = new com.example.customitemsystem.morph.MorphSetManager(this, statsManager);
+        armorCreator = new CustomArmorCreator(this, abilityManager, statsManager);
     }
 
     @Override
@@ -127,6 +129,10 @@ public class CustomItemPlugin extends JavaPlugin {
         } else if (command.getName().equalsIgnoreCase("skills")) {
             if (!(sender instanceof Player player)) return true;
             statsManager.showStats(player);
+            return true;
+        } else if (command.getName().equalsIgnoreCase("customarmor")) {
+            if (!(sender instanceof Player player)) return true;
+            armorCreator.open(player);
             return true;
         }
         return false;
