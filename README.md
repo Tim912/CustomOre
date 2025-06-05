@@ -1,5 +1,10 @@
 ## Features
 
+
+
+# DO NOT USE THIS WITHOUT THE CUSTOMORE MAIN PLUGIN AND THAT IS CURRENTLY NOT PUBLIC UNTIL I FINISHED THE BASE SYSTEM FOR THE SERVER !!!! THIS IS JUST AN ADDON !!!!
+
+
 * Over twenty abilities with descriptions – including new powers like **Frozen Scythe**, **Lightbinder**, **Hyperion Beam** und **Terminator Volley**. !!! Works !!!
 * Each ability has a mana cost. Players regenerate mana over time and the current amount is shown in the action bar. !!! Works !!!
 * Items display each ability and its description in the lore. !!! Works !!!
