@@ -2,13 +2,14 @@ package com.example.customitemsystem.stats;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
 import java.util.UUID;
 
 import org.bukkit.ChatColor;
+import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
-import org.bukkit.Material;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.persistence.PersistentDataContainer;
 import org.bukkit.persistence.PersistentDataType;
@@ -44,7 +45,7 @@ public class StatsManager {
         PlayerStats morph = morphBonus.get(player.getUniqueId());
         if (morph != null) total.add(morph);
 
-        Map<String, java.util.Set<Material>> pieces = new HashMap<>();
+        Map<String, Set<Material>> pieces = new HashMap<>();
         Map<String, Map<Integer, PlayerStats>> bonuses = new HashMap<>();
 
         for (ItemStack item : player.getInventory().getContents()) {
@@ -57,7 +58,7 @@ public class StatsManager {
         }
 
         // apply set bonuses
-        for (Map.Entry<String, java.util.Set<Material>> e : pieces.entrySet()) {
+        for (Map.Entry<String, Set<Material>> e : pieces.entrySet()) {
             String name = e.getKey();
             int count = e.getValue().size();
             Map<Integer, PlayerStats> map = bonuses.get(name);
@@ -82,8 +83,7 @@ public class StatsManager {
         if (data != null) target.add(decode(data));
     }
 
-    private void collectSetData(ItemStack item, Map<String, java.util.Set<Material>> pieces,
-                                Map<String, Map<Integer, PlayerStats>> bonuses) {
+    private void collectSetData(ItemStack item, Map<String, Set<Material>> pieces, Map<String, Map<Integer, PlayerStats>> bonuses) {
         if (item == null) return;
         ItemMeta meta = item.getItemMeta();
         if (meta == null) return;
@@ -133,7 +133,7 @@ public class StatsManager {
     }
 
     private String encode(PlayerStats s) {
-        return s.strength+"|"+s.dexterity+"|"+s.defense+"|"+s.maxMana+"|"+s.manaRegen+"|"+s.abilityDamage+"|"+s.agility;
+        return s.strength + "|" + s.dexterity + "|" + s.defense + "|" + s.maxMana + "|" + s.manaRegen + "|" + s.abilityDamage + "|" + s.agility;
     }
 
     private PlayerStats decode(String d) {
@@ -168,7 +168,6 @@ public class StatsManager {
         }
         return map;
     }
-
 
     /** Send a chat overview of all stats to the player. */
     public void showStats(Player player) {

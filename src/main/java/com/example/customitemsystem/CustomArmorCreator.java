@@ -205,7 +205,7 @@ public class CustomArmorCreator implements Listener {
             e.setCancelled(true);
             switch (e.getRawSlot()) {
                 case 9 -> { b.selectingBase = true; player.sendMessage(ChatColor.YELLOW + "Click an item in your inventory."); }
-                case 10 -> openAbility(player,0);
+                case 10 -> openAbility(player, 0);
                 case 12 -> openRarity(player);
                 case 14 -> openStats(player);
                 case 15 -> openSetBonus(player);
@@ -222,8 +222,8 @@ public class CustomArmorCreator implements Listener {
             if (item == null) return;
             int page = player.getPersistentDataContainer().getOrDefault(pageKey, PersistentDataType.INTEGER, 0);
             if (item.getType() == Material.ARROW) {
-                if (e.getSlot() == 45 && page > 0) openAbility(player, page-1);
-                else if (e.getSlot() == 53 && (page+1)*45 < Ability.values().length) openAbility(player, page+1);
+                if (e.getSlot() == 45 && page > 0) openAbility(player, page - 1);
+                else if (e.getSlot() == 53 && (page + 1) * 45 < Ability.values().length) openAbility(player, page + 1);
                 return;
             }
             String name = ChatColor.stripColor(item.getItemMeta().getDisplayName());
@@ -269,9 +269,9 @@ public class CustomArmorCreator implements Listener {
                     chatWait.put(player.getUniqueId(), msg -> { b.setName = msg; openSetBonus(player); });
                     player.sendMessage(ChatColor.YELLOW + "Type set name in chat.");
                 }
-                case 12 -> openPieceStats(player,2);
-                case 13 -> openPieceStats(player,4);
-                case 14 -> openPieceStats(player,6);
+                case 12 -> openPieceStats(player, 2);
+                case 13 -> openPieceStats(player, 4);
+                case 14 -> openPieceStats(player, 6);
                 case 26 -> openCreator(player);
             }
         } else if (title.endsWith(" Piece Stats")) {
