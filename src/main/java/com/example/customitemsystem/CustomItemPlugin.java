@@ -87,7 +87,12 @@ public class CustomItemPlugin extends JavaPlugin {
                 return true;
             }
             double price;
-            try { price = Double.parseDouble(args[0]); } catch (NumberFormatException ex) { player.sendMessage("Invalid price"); return true; }
+            try { 
+                price = Double.parseDouble(args[0]); 
+            } catch (NumberFormatException ex) { 
+                player.sendMessage("Invalid price"); 
+                return true; 
+            }
             ItemStack item = player.getInventory().getItemInMainHand();
             auctionHouse.listItem(player, item, price);
             return true;

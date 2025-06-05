@@ -15,8 +15,8 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.inventory.ItemStack;
-import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.inventory.meta.ItemMeta;
+import org.bukkit.plugin.java.JavaPlugin;
 import com.example.customitemsystem.stats.StatsManager;
 import com.example.customitemsystem.stats.PlayerStats;
 
@@ -131,7 +131,9 @@ public class MorphSetManager implements Listener {
     private void applyFullSet(Player player) {
         player.addPotionEffect(new org.bukkit.potion.PotionEffect(org.bukkit.potion.PotionEffectType.REGENERATION, 120, 2));
         player.addPotionEffect(new org.bukkit.potion.PotionEffect(org.bukkit.potion.PotionEffectType.SPEED, 120, 1));
-        player.getAttribute(Attribute.GENERIC_ATTACK_DAMAGE).setBaseValue( player.getAttribute(Attribute.GENERIC_ATTACK_DAMAGE).getBaseValue() + 4);
+        player.getAttribute(Attribute.GENERIC_ATTACK_DAMAGE).setBaseValue(
+            player.getAttribute(Attribute.GENERIC_ATTACK_DAMAGE).getBaseValue() + 4
+        );
     }
 
     @EventHandler

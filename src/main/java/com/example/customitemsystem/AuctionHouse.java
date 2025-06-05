@@ -3,13 +3,12 @@ package com.example.customitemsystem;
 import java.util.*;
 import java.io.File;
 import java.io.IOException;
-import org.bukkit.configuration.file.YamlConfiguration;
-import org.bukkit.configuration.ConfigurationSection;
-
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
+import org.bukkit.configuration.file.YamlConfiguration;
+import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
@@ -106,7 +105,6 @@ public class AuctionHouse implements Listener {
             ItemMeta meta = display.getItemMeta();
             if (meta != null) {
                 List<String> lore = meta.getLore() == null ? new ArrayList<>() : new ArrayList<>(meta.getLore());
-                lore.add("");
                 lore.add("");
                 long mins = Math.max(0, (l.endTime - System.currentTimeMillis()) / 60000);
                 lore.add(ChatColor.YELLOW + "Price: " + l.price);

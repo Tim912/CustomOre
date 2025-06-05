@@ -209,7 +209,6 @@ public class WardrobeManager implements Listener {
     @EventHandler
     public void onClose(InventoryCloseEvent e) {
         if (!ChatColor.BLUE + "Wardrobe".equals(e.getView().getTitle())) return;
-        // nothing to do
     }
 
     @EventHandler
