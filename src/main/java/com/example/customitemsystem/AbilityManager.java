@@ -87,7 +87,11 @@ public class AbilityManager implements Listener {
 
     private void applyAbility(Player player, Ability ability) {
         switch (ability) {
-            case FIREBALL -> player.launchProjectile(org.bukkit.entity.Fireball.class);
+            case FIREBALL -> {
+                org.bukkit.entity.Fireball f = player.launchProjectile(org.bukkit.entity.Fireball.class);
+                int ad = statsManager.getStats(player).abilityDamage;
+                f.setMetadata("abilityDamage", new org.bukkit.metadata.FixedMetadataValue(plugin, ad));
+            }
             case HEAL -> player.setHealth(Math.min(player.getMaxHealth(), player.getHealth() + 4));
             case SPEED_BOOST -> player.addPotionEffect(new org.bukkit.potion.PotionEffect(org.bukkit.potion.PotionEffectType.SPEED, 200, 1));
             case INVISIBILITY -> player.addPotionEffect(new org.bukkit.potion.PotionEffect(org.bukkit.potion.PotionEffectType.INVISIBILITY, 200, 0));
@@ -100,7 +104,11 @@ public class AbilityManager implements Listener {
                     player.teleport(target);
                 }
             }
-            case EXPLOSION -> player.getWorld().createExplosion(player.getLocation(), 2F, false, false);
+            case EXPLOSION -> {
+                int ad = statsManager.getStats(player).abilityDamage;
+                float power = 2F + ad / 50F;
+                player.getWorld().createExplosion(player.getLocation(), power, false, false);
+            }
             case FLIGHT -> player.setAllowFlight(true);
             case WATER_BREATHING -> player.addPotionEffect(new org.bukkit.potion.PotionEffect(org.bukkit.potion.PotionEffectType.WATER_BREATHING, 600, 0));
             case RESISTANCE -> player.addPotionEffect(new org.bukkit.potion.PotionEffect(org.bukkit.potion.PotionEffectType.DAMAGE_RESISTANCE, 200, 1));
@@ -117,7 +125,8 @@ public class AbilityManager implements Listener {
                 for (int i = 0; i < 5; i++) {
                     loc = loc.add(loc.getDirection());
                     player.getWorld().spawnParticle(org.bukkit.Particle.END_ROD, loc, 10, 0.1, 0.1, 0.1, 0);
-                    player.getWorld().createExplosion(loc, 1F, false, false);
+                    float power = 1F + statsManager.getStats(player).abilityDamage / 100F;
+                    player.getWorld().createExplosion(loc, power, false, false);
                 }
             }
             case TERMINATOR_VOLLEY -> {
@@ -126,6 +135,8 @@ public class AbilityManager implements Listener {
                 for (int i = -1; i <= 1; i++) {
                     org.bukkit.Location loc = base.clone().add(side.clone().multiply(i));
                     org.bukkit.entity.Arrow arrow = player.getWorld().spawnArrow(loc, base.getDirection(), 2F, 0F);
+                    int ad = statsManager.getStats(player).abilityDamage;
+                    arrow.setMetadata("abilityDamage", new org.bukkit.metadata.FixedMetadataValue(plugin, ad));
                     arrow.setShooter(player);
                 }
             }
