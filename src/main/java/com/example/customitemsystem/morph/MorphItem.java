@@ -49,4 +49,17 @@ public enum MorphItem {
         }
         return null;
     }
+
+    /**
+     * Returns the Morph item for the given stack if the display name contains
+     * "Morph".
+     */
+    public static MorphItem fromItemStack(org.bukkit.inventory.ItemStack stack) {
+        if (stack == null) return null;
+        org.bukkit.inventory.meta.ItemMeta meta = stack.getItemMeta();
+        if (meta == null || meta.getDisplayName() == null) return null;
+        String name = org.bukkit.ChatColor.stripColor(meta.getDisplayName());
+        if (!name.toLowerCase().contains("morph")) return null;
+        return fromMaterial(stack.getType());
+    }
 }
