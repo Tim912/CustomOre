@@ -25,5 +25,5 @@ commands:
     description: View your skill points
     usage: /<command>
   customarmor:
-    description: Create a custom armor piece
+    description: Manage custom items
     usage: /<command>

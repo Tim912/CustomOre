@@ -61,7 +61,7 @@ public class MorphSetManager implements Listener {
 
     private void refreshItemLore(ItemStack item, int pieces) {
         if (item == null) return;
-        MorphItem morph = MorphItem.fromMaterial(item.getType());
+        MorphItem morph = MorphItem.fromItemStack(item);
         if (morph == null) return;
         ItemMeta meta = item.getItemMeta();
         if (meta == null) return;
@@ -110,22 +110,16 @@ public class MorphSetManager implements Listener {
     }
 
     private int countPieces(Player player) {
-        int count = 0;
-        ItemStack[] armor = player.getInventory().getArmorContents();
-        if (armor[3] != null && armor[3].getType() == MorphItem.MORPH_STARDUST.getMaterial()) count++;
-        if (armor[2] != null && armor[2].getType() == MorphItem.MORPH_STEEL.getMaterial()) count++;
-        if (armor[1] != null && armor[1].getType() == MorphItem.MORPH_IRON.getMaterial()) count++;
-        if (armor[0] != null && armor[0].getType() == MorphItem.MORPH_GOLD.getMaterial()) count++;
-        Set<Material> acc = EnumSet.noneOf(Material.class);
-        acc.add(MorphItem.MORPH_TOPAZ.getMaterial());
-        acc.add(MorphItem.MORPH_EMERALD.getMaterial());
-        acc.add(MorphItem.MORPH_AMETHYST.getMaterial());
-        acc.add(MorphItem.MORPH_RUBY.getMaterial());
-        for (ItemStack item : player.getInventory().getContents()) {
-            if (item == null) continue;
-            if (acc.remove(item.getType())) count++;
+        java.util.Set<MorphItem> found = java.util.EnumSet.noneOf(MorphItem.class);
+        for (ItemStack item : player.getInventory().getArmorContents()) {
+            MorphItem m = MorphItem.fromItemStack(item);
+            if (m != null) found.add(m);
         }
-        return count;
+        for (ItemStack item : player.getInventory().getContents()) {
+            MorphItem m = MorphItem.fromItemStack(item);
+            if (m != null) found.add(m);
+        }
+        return found.size();
     }
 
     private void applyFullSet(Player player) {
