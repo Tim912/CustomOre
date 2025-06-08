@@ -17,6 +17,7 @@ import org.bukkit.plugin.java.JavaPlugin;
 
 import com.example.customitemsystem.stats.PlayerStats;
 import com.example.customitemsystem.stats.StatsManager;
+import com.example.customitemsystem.ArmorPiece;
 
 import java.util.*;
 import java.util.function.Consumer;
@@ -55,7 +56,9 @@ public class CustomArmorCreator implements Listener {
         Inventory inv = Bukkit.createInventory(player, 27, ChatColor.DARK_AQUA + "Item Creator");
         inv.setItem(9, item(b.base == null ? Material.CHEST : b.base.getType(), ChatColor.YELLOW + "Base Item", b.base == null ? ChatColor.GRAY + "Click to select" : b.base.getType().name()));
         inv.setItem(10, item(Material.BOOK, ChatColor.YELLOW + "Ability", b.ability == null ? ChatColor.GRAY + "None" : b.ability.getDisplayName()));
+        inv.setItem(11, item(Material.NAME_TAG, ChatColor.YELLOW + "Item Name", b.name == null ? ChatColor.GRAY + "Click to set" : b.name));
         inv.setItem(12, item(Material.NETHER_STAR, ChatColor.YELLOW + "Rarity", b.rarity.getColor() + b.rarity.name()));
+        inv.setItem(13, item(Material.LEATHER_CHESTPLATE, ChatColor.YELLOW + "Pieces", ChatColor.GRAY + b.pieces.size() + " selected"));
         inv.setItem(14, item(Material.DIAMOND, ChatColor.YELLOW + "Stats", ChatColor.GRAY + "Click to edit"));
         inv.setItem(15, item(Material.ENCHANTED_BOOK, ChatColor.YELLOW + "Set Bonus"));
         inv.setItem(16, item(Material.ANVIL, ChatColor.GREEN + "Create"));
@@ -122,9 +125,23 @@ public class CustomArmorCreator implements Listener {
         Builder b = builders.get(player.getUniqueId());
         Inventory inv = Bukkit.createInventory(player, 27, ChatColor.DARK_PURPLE + "Set Bonus");
         inv.setItem(10, item(Material.PAPER, ChatColor.YELLOW + "Set Name", b.setName == null ? ChatColor.GRAY + "None" : b.setName));
+        inv.setItem(11, item(Material.LEATHER_CHESTPLATE, ChatColor.YELLOW + "Pieces", ChatColor.GRAY + b.pieces.size() + " selected"));
         inv.setItem(12, item(Material.PAPER, ChatColor.AQUA + "2 Pieces"));
         inv.setItem(13, item(Material.PAPER, ChatColor.AQUA + "4 Pieces"));
         inv.setItem(14, item(Material.PAPER, ChatColor.AQUA + "6 Pieces"));
+        inv.setItem(26, item(Material.ARROW, ChatColor.YELLOW + "Back"));
+        player.openInventory(inv);
+    }
+
+    private void openPieces(Player player) {
+        Builder b = builders.get(player.getUniqueId());
+        Inventory inv = Bukkit.createInventory(player, 27, ChatColor.DARK_BLUE + "Select Pieces");
+        int i = 10;
+        for (ArmorPiece p : ArmorPiece.values()) {
+            boolean sel = b.pieces.contains(p);
+            inv.setItem(i++, item(p.getMaterial(), (sel ? ChatColor.GREEN : ChatColor.GRAY) + p.getName()));
+        }
+        inv.setItem(15, item(Material.ANVIL, ChatColor.GREEN + "Done"));
         inv.setItem(26, item(Material.ARROW, ChatColor.YELLOW + "Back"));
         player.openInventory(inv);
     }
@@ -161,140 +178,24 @@ public class CustomArmorCreator implements Listener {
                 ChatColor.YELLOW + "Shift = +/-5");
     }
 
-    private void create(Player player) {
-        Builder b = builders.get(player.getUniqueId());
-        ItemStack item = b.base == null ? new ItemStack(Material.DIAMOND_CHESTPLATE) : b.base.clone();
+    private void applyMeta(ItemStack item, Builder b) {
         ItemMeta meta = item.getItemMeta();
-        if (meta != null) {
-            String baseName = meta.hasDisplayName() ? ChatColor.stripColor(meta.getDisplayName()) : "Custom Item";
-            meta.setDisplayName(b.rarity.format(baseName));
-            item.setItemMeta(meta);
-        }
-        if (b.ability != null) abilityManager.addAbility(item, b.ability);
-        statsManager.applyItemStats(item, b.stats);
-        if (b.setName != null) statsManager.applySetInfo(item, b.setName, b.setBonuses);
-        player.getInventory().addItem(item);
-        createdItems.add(item.clone());
-        builders.remove(player.getUniqueId());
-        player.sendMessage(ChatColor.GREEN + "Created custom item.");
-        player.closeInventory();
+        if (meta == null) return;
+        String baseName = b.name != null ? b.name : meta.hasDisplayName() ? ChatColor.stripColor(meta.getDisplayName()) : "Custom Item";
+        meta.setDisplayName(b.rarity.format(baseName));
+        item.setItemMeta(meta);
     }
 
-    @EventHandler
-    public void onClick(InventoryClickEvent e) {
-        String title = e.getView().getTitle();
-        if (!(e.getWhoClicked() instanceof Player player)) return;
-
-        Builder b = builders.get(player.getUniqueId());
-        if (b != null && b.selectingBase && e.getClickedInventory() == player.getInventory()) {
-            e.setCancelled(true);
-            ItemStack it = e.getCurrentItem();
-            if (it != null) {
-                b.base = it.clone();
-            }
-            b.selectingBase = false;
-            openCreator(player);
-            return;
-        }
-
-        if (title.equals(ChatColor.DARK_AQUA + "Custom Items")) {
-            e.setCancelled(true);
-            if (e.getRawSlot() == 11) openCreator(player);
-            else if (e.getRawSlot() == 15) openList(player);
-        } else if (title.equals(ChatColor.DARK_AQUA + "Item Creator")) {
-            e.setCancelled(true);
-            switch (e.getRawSlot()) {
-                case 9 -> { b.selectingBase = true; player.sendMessage(ChatColor.YELLOW + "Click an item in your inventory."); }
-                case 10 -> openAbility(player, 0);
-                case 12 -> openRarity(player);
-                case 14 -> openStats(player);
-                case 15 -> openSetBonus(player);
-                case 16 -> create(player);
-                case 26 -> { builders.remove(player.getUniqueId()); open(player); }
-            }
-        } else if (title.equals(ChatColor.DARK_BLUE + "Created Items")) {
-            e.setCancelled(true);
-            ItemStack it = e.getCurrentItem();
-            if (it != null) player.getInventory().addItem(it.clone());
-        } else if (title.equals(ChatColor.DARK_GREEN + "Select Ability")) {
-            e.setCancelled(true);
-            ItemStack item = e.getCurrentItem();
-            if (item == null) return;
-            int page = player.getPersistentDataContainer().getOrDefault(pageKey, PersistentDataType.INTEGER, 0);
-            if (item.getType() == Material.ARROW) {
-                if (e.getSlot() == 45 && page > 0) openAbility(player, page - 1);
-                else if (e.getSlot() == 53 && (page + 1) * 45 < Ability.values().length) openAbility(player, page + 1);
-                return;
-            }
-            String name = ChatColor.stripColor(item.getItemMeta().getDisplayName());
-            for (Ability a : Ability.values()) {
-                if (a.getDisplayName().contains(name)) {
-                    builders.get(player.getUniqueId()).ability = a;
-                    break;
-                }
-            }
-            openCreator(player);
-        } else if (title.equals(ChatColor.DARK_PURPLE + "Select Rarity")) {
-            e.setCancelled(true);
-            ItemStack item = e.getCurrentItem();
-            if (item == null) return;
-            String name = ChatColor.stripColor(item.getItemMeta().getDisplayName());
-            try {
-                b.rarity = Rarity.valueOf(name.toUpperCase());
-            } catch (IllegalArgumentException ignored) {}
-            openCreator(player);
-        } else if (title.equals(ChatColor.BLUE + "Edit Stats")) {
-            e.setCancelled(true);
-            if (e.getSlot() == 49) { openCreator(player); return; }
-            ItemStack item = e.getCurrentItem();
-            if (item == null) return;
-            String stat = ChatColor.stripColor(item.getItemMeta().getDisplayName());
-            int delta = e.isShiftClick() ? 5 : 1;
-            if (e.isRightClick()) delta = -delta;
-            switch (stat) {
-                case "Strength" -> b.stats.strength = Math.max(0, b.stats.strength + delta);
-                case "Dexterity" -> b.stats.dexterity = Math.max(0, b.stats.dexterity + delta);
-                case "Defense" -> b.stats.defense = Math.max(0, b.stats.defense + delta);
-                case "Max Mana" -> b.stats.maxMana = Math.max(0, b.stats.maxMana + delta);
-                case "Mana Regen" -> b.stats.manaRegen = Math.max(0, b.stats.manaRegen + delta);
-                case "Ability Damage" -> b.stats.abilityDamage = Math.max(0, b.stats.abilityDamage + delta);
-                case "Agility" -> b.stats.agility = Math.max(0, b.stats.agility + delta);
-            }
-            openStats(player);
-        } else if (title.equals(ChatColor.DARK_PURPLE + "Set Bonus")) {
-            e.setCancelled(true);
-            switch (e.getRawSlot()) {
-                case 10 -> {
-                    player.closeInventory();
-                    chatWait.put(player.getUniqueId(), msg -> { b.setName = msg; openSetBonus(player); });
-                    player.sendMessage(ChatColor.YELLOW + "Type set name in chat.");
-                }
-                case 12 -> openPieceStats(player, 2);
-                case 13 -> openPieceStats(player, 4);
-                case 14 -> openPieceStats(player, 6);
-                case 26 -> openCreator(player);
-            }
-        } else if (title.endsWith(" Piece Stats")) {
-            e.setCancelled(true);
-            if (e.getSlot() == 49) { openSetBonus(player); return; }
-            ItemStack item = e.getCurrentItem();
-            if (item == null) return;
-            String stat = ChatColor.stripColor(item.getItemMeta().getDisplayName());
-            int delta = e.isShiftClick() ? 5 : 1;
-            if (e.isRightClick()) delta = -delta;
-            PlayerStats ps = b.setBonuses.getOrDefault(b.editingPiece, new PlayerStats());
-            switch (stat) {
-                case "Strength" -> ps.strength = Math.max(0, ps.strength + delta);
-                case "Dexterity" -> ps.dexterity = Math.max(0, ps.dexterity + delta);
-                case "Defense" -> ps.defense = Math.max(0, ps.defense + delta);
-                case "Max Mana" -> ps.maxMana = Math.max(0, ps.maxMana + delta);
-                case "Mana Regen" -> ps.manaRegen = Math.max(0, ps.manaRegen + delta);
-                case "Ability Damage" -> ps.abilityDamage = Math.max(0, ps.abilityDamage + delta);
-                case "Agility" -> ps.agility = Math.max(0, ps.agility + delta);
-            }
-            b.setBonuses.put(b.editingPiece, ps);
-            openPieceStats(player, b.editingPiece);
-        }
+    private PlayerStats divideStats(PlayerStats s, int n) {
+        PlayerStats out = new PlayerStats();
+        out.strength = s.strength / n;
+        out.dexterity = s.dexterity / n;
+        out.defense = s.defense / n;
+        out.maxMana = s.maxMana / n;
+        out.manaRegen = s.manaRegen / n;
+        out.abilityDamage = s.abilityDamage / n;
+        out.agility = s.agility / n;
+        return out;
     }
 
     private static class Builder {
@@ -302,8 +203,10 @@ public class CustomArmorCreator implements Listener {
         Rarity rarity = Rarity.COMMON;
         PlayerStats stats = new PlayerStats();
         ItemStack base;
+        String name;
         String setName;
         Map<Integer, PlayerStats> setBonuses = new HashMap<>();
+        java.util.Set<ArmorPiece> pieces = java.util.EnumSet.noneOf(ArmorPiece.class);
         boolean selectingBase = false;
         int editingPiece = 0;
     }

@@ -3,8 +3,8 @@ package com.example.customitemsystem;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.entity.Player;
-import net.md_5.bungee.api.ChatMessageType;
-import net.md_5.bungee.api.chat.TextComponent;
+import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.format.NamedTextColor;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerJoinEvent;
@@ -43,8 +43,8 @@ public class ManaManager implements Listener {
             int regen = 1 + s.manaRegen;
             int value = Math.min(max, mana.get(id) + regen);
             mana.put(id, value);
-            p.spigot().sendMessage(ChatMessageType.ACTION_BAR,
-                new TextComponent(ChatColor.AQUA + "Mana: " + value + "/" + max));
+            p.sendActionBar(Component.text("Mana: " + value + "/" + max,
+                    NamedTextColor.AQUA));
         }
     }
 

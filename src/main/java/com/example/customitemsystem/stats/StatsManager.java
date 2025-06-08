@@ -4,6 +4,9 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
+import java.util.HashSet;
+import java.util.List;
+import java.util.ArrayList;
 
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
@@ -90,7 +93,7 @@ public class StatsManager {
         PersistentDataContainer c = meta.getPersistentDataContainer();
         String name = c.get(setKey, PersistentDataType.STRING);
         if (name == null) return;
-        pieces.computeIfAbsent(name, k -> new java.util.HashSet<>()).add(item.getType());
+        pieces.computeIfAbsent(name, k -> new HashSet<>()).add(item.getType());
         if (!bonuses.containsKey(name)) {
             String encoded = c.get(bonusKey, PersistentDataType.STRING);
             if (encoded != null) bonuses.put(name, decodeBonuses(encoded));
@@ -102,7 +105,7 @@ public class StatsManager {
         ItemMeta meta = item.getItemMeta();
         if (meta == null) return;
         meta.getPersistentDataContainer().set(statsKey, PersistentDataType.STRING, encode(stats));
-        java.util.List<String> lore = meta.getLore() == null ? new java.util.ArrayList<>() : new java.util.ArrayList<>(meta.getLore());
+        List<String> lore = meta.getLore() == null ? new ArrayList<>() : new ArrayList<>(meta.getLore());
         lore.add("" + ChatColor.GOLD + "Stats:");
         lore.add(ChatColor.YELLOW + "Strength: " + stats.strength);
         lore.add(ChatColor.YELLOW + "Dexterity: " + stats.dexterity);
@@ -121,7 +124,7 @@ public class StatsManager {
         if (meta == null) return;
         meta.getPersistentDataContainer().set(setKey, PersistentDataType.STRING, name);
         meta.getPersistentDataContainer().set(bonusKey, PersistentDataType.STRING, encodeBonuses(bonuses));
-        java.util.List<String> lore = meta.getLore() == null ? new java.util.ArrayList<>() : new java.util.ArrayList<>(meta.getLore());
+        List<String> lore = meta.getLore() == null ? new ArrayList<>() : new ArrayList<>(meta.getLore());
         lore.add("");
         lore.add(ChatColor.LIGHT_PURPLE + name + " Set");
         for (Map.Entry<Integer, PlayerStats> e : bonuses.entrySet()) {

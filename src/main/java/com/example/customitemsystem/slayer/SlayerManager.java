@@ -1,11 +1,14 @@
 package com.example.customitemsystem.slayer;
 
 import org.bukkit.Bukkit;
+import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.format.NamedTextColor;
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
 import org.bukkit.boss.BarColor;
 import org.bukkit.boss.BarStyle;
 import org.bukkit.boss.BossBar;
+import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
@@ -35,7 +38,8 @@ public class SlayerManager implements Listener {
     }
 
     public void openMainMenu(Player player) {
-        Inventory inv = Bukkit.createInventory(null, 9, ChatColor.DARK_RED + "Slayer");
+        Inventory inv = Bukkit.createInventory(null, 9,
+                Component.text("Slayer", NamedTextColor.DARK_RED));
         for (BossType type : BossType.values()) {
             ItemStack item;
             switch (type) {
@@ -81,7 +85,7 @@ public class SlayerManager implements Listener {
     }
 
     private void openTierMenu(Player player, BossType type) {
-        Inventory inv = Bukkit.createInventory(null, 9, ChatColor.RED + "Select " + type.name());
+        Inventory inv = Bukkit.createInventory(null, 9, Component.text("Select " + type.name(), NamedTextColor.RED));
         for (int i = 1; i <= 5; i++) {
             ItemStack item = new ItemStack(Material.PAPER);
             ItemMeta meta = item.getItemMeta();
@@ -99,9 +103,9 @@ public class SlayerManager implements Listener {
 
     private void startQuest(Player player, BossType type, int tier) {
         int killsNeeded = tier * 10;
-        BossBar bar = Bukkit.createBossBar(ChatColor.DARK_RED + "Kills", BarColor.RED, BarStyle.SEGMENTED_10);
+        BossBar bar = Bukkit.createBossBar(Component.text("Kills", NamedTextColor.DARK_RED),
+                BarColor.RED, BarStyle.SEGMENTED_10);
         bar.addPlayer(player);
-        bar.setProgress(0);
         quests.put(player.getUniqueId(), new SlayerQuest(player, type, tier, killsNeeded, type.getKillType(), bar));
     }
 
@@ -126,8 +130,10 @@ public class SlayerManager implements Listener {
 
     private void spawnBoss(SlayerQuest quest) {
         Player player = quest.getPlayer();
-        LivingEntity entity = (LivingEntity) player.getWorld().spawnEntity(player.getLocation(), quest.getBossType().getEntityType());
-        entity.setCustomName(quest.getBossType().getDisplayName() + ChatColor.WHITE + " Tier " + quest.getTier());
+        LivingEntity entity = (LivingEntity) player.getWorld().spawnEntity(player.getLocation(),
+                quest.getBossType().getEntityType());
+        entity.customName(LegacyComponentSerializer.legacySection()
+                .deserialize(quest.getBossType().getDisplayName() + ChatColor.WHITE + " Tier " + quest.getTier()));
         entity.setCustomNameVisible(true);
         double hp = 20 + quest.getTier() * 10;
         entity.getAttribute(org.bukkit.attribute.Attribute.GENERIC_MAX_HEALTH).setBaseValue(hp);
