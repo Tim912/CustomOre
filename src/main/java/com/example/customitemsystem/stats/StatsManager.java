@@ -2,13 +2,17 @@ package com.example.customitemsystem.stats;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
 import java.util.UUID;
+import java.util.HashSet;
+import java.util.List;
+import java.util.ArrayList;
 
 import org.bukkit.ChatColor;
+import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
-import org.bukkit.Material;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.persistence.PersistentDataContainer;
 import org.bukkit.persistence.PersistentDataType;
@@ -44,7 +48,7 @@ public class StatsManager {
         PlayerStats morph = morphBonus.get(player.getUniqueId());
         if (morph != null) total.add(morph);
 
-        Map<String, java.util.Set<Material>> pieces = new HashMap<>();
+        Map<String, Set<Material>> pieces = new HashMap<>();
         Map<String, Map<Integer, PlayerStats>> bonuses = new HashMap<>();
 
         for (ItemStack item : player.getInventory().getContents()) {
@@ -57,7 +61,7 @@ public class StatsManager {
         }
 
         // apply set bonuses
-        for (Map.Entry<String, java.util.Set<Material>> e : pieces.entrySet()) {
+        for (Map.Entry<String, Set<Material>> e : pieces.entrySet()) {
             String name = e.getKey();
             int count = e.getValue().size();
             Map<Integer, PlayerStats> map = bonuses.get(name);
@@ -82,15 +86,14 @@ public class StatsManager {
         if (data != null) target.add(decode(data));
     }
 
-    private void collectSetData(ItemStack item, Map<String, java.util.Set<Material>> pieces,
-                                Map<String, Map<Integer, PlayerStats>> bonuses) {
+    private void collectSetData(ItemStack item, Map<String, Set<Material>> pieces, Map<String, Map<Integer, PlayerStats>> bonuses) {
         if (item == null) return;
         ItemMeta meta = item.getItemMeta();
         if (meta == null) return;
         PersistentDataContainer c = meta.getPersistentDataContainer();
         String name = c.get(setKey, PersistentDataType.STRING);
         if (name == null) return;
-        pieces.computeIfAbsent(name, k -> new java.util.HashSet<>()).add(item.getType());
+        pieces.computeIfAbsent(name, k -> new HashSet<>()).add(item.getType());
         if (!bonuses.containsKey(name)) {
             String encoded = c.get(bonusKey, PersistentDataType.STRING);
             if (encoded != null) bonuses.put(name, decodeBonuses(encoded));
@@ -102,7 +105,7 @@ public class StatsManager {
         ItemMeta meta = item.getItemMeta();
         if (meta == null) return;
         meta.getPersistentDataContainer().set(statsKey, PersistentDataType.STRING, encode(stats));
-        java.util.List<String> lore = meta.getLore() == null ? new java.util.ArrayList<>() : new java.util.ArrayList<>(meta.getLore());
+        List<String> lore = meta.getLore() == null ? new ArrayList<>() : new ArrayList<>(meta.getLore());
         lore.add("" + ChatColor.GOLD + "Stats:");
         lore.add(ChatColor.YELLOW + "Strength: " + stats.strength);
         lore.add(ChatColor.YELLOW + "Dexterity: " + stats.dexterity);
@@ -121,7 +124,7 @@ public class StatsManager {
         if (meta == null) return;
         meta.getPersistentDataContainer().set(setKey, PersistentDataType.STRING, name);
         meta.getPersistentDataContainer().set(bonusKey, PersistentDataType.STRING, encodeBonuses(bonuses));
-        java.util.List<String> lore = meta.getLore() == null ? new java.util.ArrayList<>() : new java.util.ArrayList<>(meta.getLore());
+        List<String> lore = meta.getLore() == null ? new ArrayList<>() : new ArrayList<>(meta.getLore());
         lore.add("");
         lore.add(ChatColor.LIGHT_PURPLE + name + " Set");
         for (Map.Entry<Integer, PlayerStats> e : bonuses.entrySet()) {
@@ -133,7 +136,7 @@ public class StatsManager {
     }
 
     private String encode(PlayerStats s) {
-        return s.strength+"|"+s.dexterity+"|"+s.defense+"|"+s.maxMana+"|"+s.manaRegen+"|"+s.abilityDamage+"|"+s.agility;
+        return s.strength + "|" + s.dexterity + "|" + s.defense + "|" + s.maxMana + "|" + s.manaRegen + "|" + s.abilityDamage + "|" + s.agility;
     }
 
     private PlayerStats decode(String d) {
@@ -168,7 +171,6 @@ public class StatsManager {
         }
         return map;
     }
-
 
     /** Send a chat overview of all stats to the player. */
     public void showStats(Player player) {
