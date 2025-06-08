@@ -1,6 +1,6 @@
 name: CustomItemSystem
 main: com.example.customitemsystem.CustomItemPlugin
-version: 1.0
+version: 1.21.4
 api-version: 1.20.1
 commands:
   addability:
@@ -23,4 +23,7 @@ commands:
     usage: /<command>
   skills:
     description: View your skill points
+    usage: /<command>
+  customarmor:
+    description: Manage custom items
     usage: /<command>
