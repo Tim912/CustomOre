@@ -1,0 +1,29 @@
+name: CustomItemSystem
+main: com.example.customitemsystem.CustomItemPlugin
+version: 1.21.4
+api-version: 1.20.1
+commands:
+  addability:
+    description: Add an ability to the item in your hand.
+    usage: /<command> <ability>
+  slayer:
+    description: Open the slayer menu
+    usage: /<command>
+  armor:
+    description: Open the wardrobe
+    usage: /<command>
+  ah:
+    description: Open the auction house
+    usage: /<command>
+  ahsell:
+    description: List the held item for sale
+    usage: /<command> <price>
+  givemorph:
+    description: Give the Morph set items
+    usage: /<command>
+  skills:
+    description: View your skill points
+    usage: /<command>
+  customarmor:
+    description: Manage custom items
+    usage: /<command>
