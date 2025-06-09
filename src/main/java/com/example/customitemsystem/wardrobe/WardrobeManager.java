@@ -21,9 +21,6 @@ import org.bukkit.persistence.PersistentDataContainer;
 import org.bukkit.persistence.PersistentDataType;
 import org.bukkit.plugin.java.JavaPlugin;
 
-/**
- * Basic wardrobe system allowing players to store and equip armor sets.
- */
 public class WardrobeManager implements Listener {
     private final JavaPlugin plugin;
     private final Map<UUID, List<SetSlot>> sets = new HashMap<>();
@@ -147,12 +144,11 @@ public class WardrobeManager implements Listener {
 
     @EventHandler
     public void onClick(InventoryClickEvent e) {
-        if (!ChatColor.BLUE + "Wardrobe".equals(e.getView().getTitle())) return;
+        if (!(ChatColor.BLUE.toString() + "Wardrobe").equals(e.getView().getTitle())) return;
         e.setCancelled(true);
         Player player = (Player) e.getWhoClicked();
         int slot = e.getRawSlot();
         if (slot == 22) {
-            // unequip
             for (ItemStack item : player.getInventory().getArmorContents()) {
                 removeLock(item);
             }
@@ -165,7 +161,6 @@ public class WardrobeManager implements Listener {
         SetSlot set = list.get(slot);
         if (e.isShiftClick()) {
             if (e.isLeftClick()) {
-                // save current armor and remove it
                 ItemStack[] armor = player.getInventory().getArmorContents();
                 set.armor = new ItemStack[4];
                 for (int i = 0; i < 4; i++) {
@@ -177,7 +172,6 @@ public class WardrobeManager implements Listener {
                 player.sendMessage(ChatColor.GREEN + "Saved armor to " + set.name);
                 return;
             } else if (e.isRightClick()) {
-                // withdraw stored armor
                 if (set.armor != null) {
                     for (ItemStack piece : set.armor) {
                         if (piece != null)
@@ -208,12 +202,12 @@ public class WardrobeManager implements Listener {
 
     @EventHandler
     public void onClose(InventoryCloseEvent e) {
-        if (!ChatColor.BLUE + "Wardrobe".equals(e.getView().getTitle())) return;
+        if (!(ChatColor.BLUE.toString() + "Wardrobe").equals(e.getView().getTitle())) return;
     }
 
     @EventHandler
     public void onMove(InventoryClickEvent e) {
-        if (ChatColor.BLUE + "Wardrobe".equals(e.getView().getTitle())) return;
+        if ((ChatColor.BLUE.toString() + "Wardrobe").equals(e.getView().getTitle())) return;
         if (isLocked(e.getCurrentItem()) || isLocked(e.getCursor())) {
             e.setCancelled(true);
         }
